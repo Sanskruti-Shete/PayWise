@@ -1,9 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [transactions,setTransactions]=useState([]);
+  useEffect(()=>{
+    getTransactions().then(transactions=>{
+      setTransactions(transactions);
+    });
+  },[]);
+
+  async function getTransactions(){
+    const url=process.env.REACT_APP_API_URL+'/transactions';
+    const response=await fetch(url);
+    return await response.json();
+  }
 
   function addNewTransaction(ev){
     ev.preventDefault();
@@ -22,10 +34,15 @@ function App() {
     });
   }
 
+  let balance=0;
+  for(const transaction of transactions){
+    balance=balance+transaction.price;
+  }
+
   return (
     <div className="app-container">
       <div className="balance-section">
-        <h1 className="balance-amount">$400.00</h1>
+        <h1 className="balance-amount">Rs{balance}</h1>
       </div>
 
       <form onSubmit={addNewTransaction}>
@@ -49,38 +66,18 @@ function App() {
       </form>
 
       <div className="transactions-list">
-        <div className="transaction-item">
+        {transactions.length>0 && transactions.map(transaction=>(
+          <div className="transaction-item">
           <div className="transaction-details">
-            <h3>New Samsung TV</h3>
-            <p>It was time for new tv</p>
+            <h3>{transaction.name}</h3>
+            <p>{transaction.description}</p>
           </div>
           <div className="transaction-right">
-            <span className="transaction-amount negative">-$500</span>
-            <span className="transaction-date">2022-12-18 15:45</span>
+            <span className="transaction-amount negative">{transaction.price}</span>
+            
           </div>
         </div>
-
-        <div className="transaction-item">
-          <div className="transaction-details">
-            <h3>Gig job new website</h3>
-            <p>It was time for new tv</p>
-          </div>
-          <div className="transaction-right">
-            <span className="transaction-amount positive">+$400</span>
-            <span className="transaction-date">2022-12-18 15:45</span>
-          </div>
-        </div>
-
-        <div className="transaction-item">
-          <div className="transaction-details">
-            <h3>Iphone</h3>
-            <p>It was time for new tv</p>
-          </div>
-          <div className="transaction-right">
-            <span className="transaction-amount negative">-$900</span>
-            <span className="transaction-date">2022-12-18 15:45</span>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
